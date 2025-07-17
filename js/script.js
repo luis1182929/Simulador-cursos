@@ -1,64 +1,117 @@
 
+
 const cursos = [
     {
-        nombre: "programacion",
+        nombre: "Programacion",
         duracion: "3 meses",
         cupos: 5
     },
     {
-        nombre: "ingles",
+        nombre: "Ingles",
         duracion: "2 meses",
         cupos: 0
     },
     {
-        nombre: "matematicas",
+        nombre: "Matematicas",
         duracion: "6 meses",
         cupos: 2
     }
+    
 ];
-let inscripciones = [];
-let cantidadinscritos = 0;
 
-function solicitardatos() {
-    let nombre = prompt("ingresa tu nombre: ");
-    let edad = parseInt(prompt("ingresa tu edad: "));
-    return { nombre, edad };
+const SelectCurso = document.getElementById("cursoSeleccionado");
+const form = document.getElementById("formInscripcion");
+const resultado = document.getElementById("resultado");
+const inscripcionesGuardadas = document.getElementById("inscripcionesGuardadas");
 
-
+function cargarCursos() {
+    cursos.forEach(curso => {
+        const option = document.createElement("option");
+        option.value = curso.nombre;
+        option.textContent = `${curso.nombre} ${curso.duracion}`;
+        SelectCurso.appendChild(option);
+    });
 }
-const usuario = solicitardatos();
-console.log(usuario);
 
-let nombrecurso = prompt("A que curso te quieres inscribir? (programacion, ingles, matematicas)".toLowerCase());
-let cursoelegido = null;
-for (let i = 0; i < cursos.length; i++) {
-    if (cursos[i].nombre === nombrecurso.toLowerCase()) {
-        cursoelegido = cursos[i];
-        break;
+
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const nombreUsuario = document.getElementById("nombreUsuario").value.trim();
+    const cursoSeleccionado = SelectCurso.value;
+    const curso = cursos.find(curso => curso.nombre === cursoSeleccionado);
+
+    
+    const inscripciones = JSON.parse(localStorage.getItem("inscripciones")) || [];
+    const yaInscrito = inscripciones.some(insc =>
+        insc.nombre.trim().toLowerCase() === nombreUsuario.toLowerCase() &&
+        insc.curso === cursoSeleccionado
+    );
+
+    if (yaInscrito) {
+        mostrarMensaje(`Ya estás inscrito en el curso ${cursoSeleccionado}.`);
+        return;
     }
-}
 
-if (cursoelegido !== null) {
-    if (usuario.edad < 18) {
-        alert("Lo siento, debes tener al menos 18 años para inscribirte.");
+    
+    if (curso && curso.cupos > 0) {
+        curso.cupos--;
+
+        const inscripcion = {
+            nombre: nombreUsuario,
+            curso: curso.nombre,
+            fecha: new Date().toLocaleDateString(),
+        };
+
+        guardarEnLocalStorage(inscripcion);
+        mostrarMensaje(`${nombreUsuario}, te inscribiste a ${curso.nombre}. Quedan ${curso.cupos} cupos disponibles`);
+        mostrarInscripciones();
+        form.reset();
     } else {
-        if (cursoelegido.cupos > 0) {
-            cursoelegido.cupos--;
-
-            inscripciones[cantidadinscritos] = {
-                nombre: usuario.nombre,
-                edad: usuario.edad,
-                curso: cursoelegido.nombre,
-            };
-            cantidadinscritos++;
-            alert("Inscripcion exitosa, te inscribiste a " + cursoelegido.nombre + ". \nCupos restantes: " + cursoelegido.cupos);
-        } else {
-            alert("Lo sentimos, no hay cupos disponibles para " + cursoelegido.nombre);
-        }
+        mostrarMensaje(`No hay cupos disponibles para el curso ${cursoSeleccionado}.`);
     }
-} else {
-    alert("Curso no valido, por favor verifica el nombre.");    
+});
+
+
+
+
+
+function mostrarInscripciones() {
+    let inscripciones = JSON.parse(localStorage.getItem("inscripciones")) || [];
+    inscripcionesGuardadas.innerHTML = "<h2>Inscripciones previas:</h2>";
+    inscripciones.forEach(inscripcion => {
+        const parrafoInscripcion = document.createElement("p");
+        parrafoInscripcion.textContent = `${inscripcion.nombre} se inscribió en ${inscripcion.curso} el ${inscripcion.fecha}.`;
+        inscripcionesGuardadas.appendChild(parrafoInscripcion);
+    })
 }
+function guardarEnLocalStorage(inscripcion) {
+    let inscripciones = JSON.parse(localStorage.getItem("inscripciones")) || [];
+    inscripciones.push(inscripcion);
+    localStorage.setItem("inscripciones", JSON.stringify(inscripciones));
+}
+
+
+function mostrarMensaje(mensaje) {
+    resultado.textContent = mensaje;
+}
+
+
+cargarCursos();
+mostrarInscripciones();
+
+const btnBorrar = document.getElementById("btnBorrar");
+
+btnBorrar.addEventListener("click", () => {
+    if (confirm("¿Estás seguro de que quieres borrar todas las inscripciones?")) {
+        localStorage.removeItem("inscripciones");
+        mostrarMensaje ("inscripciones borradas exitosamente");
+        mostrarInscripciones();
+    }
+});
+
+
+
 
 
 

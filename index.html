@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entregable 1</title>
+    <title>Simulador de cursos</title>
     <script defer src="js/script.js"></script>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
+
 <body>
-    <h1>Simulador</h1>
-    <p>Este simulador permite registrar a una persona en uno de tres cursos disponibles. Primero le pide su nombre y edad, luego le pregunta a que curso se quiere inscribir. Se verifica si tiene al menos 18 años y si hay cupos disponibles en ese curso. Si cumple con los requisitos, se confirna la inscripcion y se descuenta un cupo. Si no cumple, muestra un mensaje explicando por que no se puede inscribir.</p>
+    <h1>Inscripción a cursos.</h1>
+    <form id="formInscripcion">
+        <input type="text" id="nombreUsuario" placeholder="Ingrese su nombre" required />
+        <select id="cursoSeleccionado" required></select>
+        <button type="submit">inscribirse</button>
+    </form>
+    <button id="btnBorrar" style="margin-top: 10px;">Borrar inscripciones</button>
+
+    <div id="resultado"></div>
+    <div id="inscripcionesGuardadas"></div>
+
 </body>
+
 </html>
