@@ -50,3 +50,21 @@ function borrarInscripciones() {
 }
 
 const cursosDisponibles = () => cursos.filter(curso=> curso.cupos> 0);
+
+[
+    {
+        "nombre": "Programacion",
+        "duracion": "3 meses",
+        "cupos": 5
+    },
+    {
+        "nombre": "Ingles",
+        "duracion": "2 meses",
+        "cupos": 0
+    },
+    {
+        "nombre": "Matematicas",
+        "duracion": "6 meses",
+        "cupos": 2
+    }
+    ]

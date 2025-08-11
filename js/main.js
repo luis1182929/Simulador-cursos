@@ -1,5 +1,7 @@
+
+
 document.addEventListener("DOMContentLoaded", async () => {
-    await cargarCursos();
+    await cargarCursos();         
     renderOpcionesCursos();
     mostrarInscripciones();
 });
@@ -8,88 +10,81 @@ function renderOpcionesCursos() {
     const SelectCurso = document.getElementById("cursoSeleccionado");
     SelectCurso.innerHTML = "";
 
-    const cursosFormateados = cursos.map(curso => {
-        return {
-            ...curso,
-            nombre: curso.nombre.toUpperCase(),
-            textoMostrar: curso.cupos > 0 ? curso.nombre.toUpperCase() + `  ${curso.duracion}` : curso.nombre.toUpperCase() + `  ${curso.duracion} (Sin cupos)`
-        };
-    });
+    
+    const opciones = cursos.map(c => ({
+        value: c.nombre,
+        label: c.cupos > 0
+            ? `${c.nombre.toUpperCase()}  ${c.duracion}`
+            : `${c.nombre.toUpperCase()}  ${c.duracion} (Sin cupos)`
+    }));
 
-
-
-
-
-
-    cursosFormateados.forEach(curso => {
+    opciones.forEach(op => {
         const option = document.createElement("option");
-        option.value = curso.nombre;
-        option.textContent = curso.textoMostrar;
+        option.value = op.value;       
+        option.textContent = op.label;
         SelectCurso.appendChild(option);
     });
-    
-
-   
 }
 
 const form = document.getElementById("formInscripcion");
-const resultado = document.getElementById("resultado");
 const inscripcionesGuardadas = document.getElementById("inscripcionesGuardadas");
 
 form.addEventListener("submit", (event) => {
     event.preventDefault();
 
+    
+    const cursosLS = JSON.parse(localStorage.getItem("cursos"));
+    if (Array.isArray(cursosLS)) cursos = cursosLS;
+
     const nombreUsuario = document.getElementById("nombreUsuario").value.trim();
     const cursoSeleccionado = document.getElementById("cursoSeleccionado").value;
-    const curso = cursos.find(curso => curso.nombre.toLowerCase() === cursoSeleccionado.toLowerCase());
+    const curso = cursos.find(c => c.nombre.toLowerCase() === cursoSeleccionado.toLowerCase());
 
-    const inscripciones = obtenerInscripciones();
-    const yaInscrito = inscripciones.some(insc =>
-        insc.nombre.trim().toLowerCase() === nombreUsuario.toLowerCase() &&
-        insc.curso === cursoSeleccionado
-    );
-
-    if (yaInscrito) {
+    if (!curso) {
+        Toastify({ text: "Curso no encontrado.", duration: 3000, backgroundColor: "red" }).showToast();
+        return;
+    }
+    if (curso.cupos <= 0) {
+        const esMP = ["matematicas","programacion"].includes(curso.nombre.toLowerCase());
         Toastify({
-            text: `Ya estás inscrito en el curso ${cursoSeleccionado}.`,
+            text: esMP ? `Ya no hay más cupos para ${curso.nombre}` : `No hay cupos disponibles para ${curso.nombre}`,
             duration: 3000,
-            backgroundColor: "orange",
+            backgroundColor: "red"
         }).showToast();
         return;
     }
 
-    if (curso && curso.cupos > 0) {
-        curso.cupos--;
-        guardarCursosEnLocalStorage();
     
-       
+    curso.cupos--;
+
     
-
-        const inscripcion = {
-            nombre: nombreUsuario,
-            curso: curso.nombre,
-            fecha: new Date().toLocaleDateString(),
-        };
-
-        guardarEnLocalStorage(inscripcion);
-        mostrarInscripciones();
-        form.reset();
-
+    if (["matematicas","programacion"].includes(curso.nombre.toLowerCase()) && curso.cupos === 0) {
         Toastify({
-            text: `${nombreUsuario}, te inscribiste a ${cursoSeleccionado}. Quedan ${curso.cupos} cupos disponibles`,
+            text: `Ya no hay más cupos para ${curso.nombre}`,
             duration: 3000,
-            backgroundColor: "green",
-        }).showToast();
-
-
-    }
-    else {
-        Toastify({
-            text: `No hay cupos disponibles para el curso ${cursoSeleccionado}.`,
-            duration: 3000,
-            backgroundColor: "red",
+            backgroundColor: "red"
         }).showToast();
     }
+
+    
+    guardarCursosEnLocalStorage(); 
+    renderOpcionesCursos();
+
+    
+    const inscripcion = {
+        nombre: nombreUsuario,
+        curso: curso.nombre,
+        fecha: new Date().toLocaleDateString(),
+    };
+    guardarEnLocalStorage(inscripcion);
+    mostrarInscripciones();
+
+    
+    Toastify({
+        text: `${nombreUsuario}, te inscribiste a ${cursoSeleccionado}. Quedan ${curso.cupos} cupos disponibles`,
+        duration: 3000,
+        backgroundColor: "green"
+    }).showToast();
 });
 
 function mostrarInscripciones() {
@@ -121,7 +116,35 @@ confirmNo.addEventListener("click", () => {
     modal.style.display = "none"; 
 });
 
-cargarCursos().then(() => {
-    
-    console.log(cursosDisponibles()); 
+async function resetearCupos() {
+    try {
+        const resp = await fetch('data/cursos.json');
+        if (!resp.ok) throw new Error('No se pudo cargar data/cursos.json');
+        const data = await resp.json();
+
+        cursos = data;
+        guardarCursosEnLocalStorage();
+        renderOpcionesCursos();
+
+        Toastify({
+            text: "Cupos reseteados correctamente.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "linear-gradient(to right, #2193b0, #6dd5ed)"
+        }).showToast();
+    } catch (error) {
+        console.error('Error al resetear cupos:', error);
+        Toastify({
+            text: "Error al resetear cupos. Revisa la consola.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "red"
+        }).showToast();
+    }
+}
+
+document.getElementById('resetCuposBtn').addEventListener('click', () => {
+    resetearCupos();
 });
