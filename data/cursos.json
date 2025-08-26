@@ -1,17 +1,23 @@
 [
-{
-    "nombre": "programacion",
-    "duracion": "3 meses",
-    "cupos": 5
-},
-{
-    "nombre": "ingles",
-    "duracion": "2 meses",
-    "cupos": 0
-},
-{
-    "nombre": "matematicas",
-    "duracion": "6 meses",
-    "cupos": 2
-}
-]
+    {
+      "id": 1,
+      "nombre": "Programacion",
+      "duracion": "3 meses",
+      "cuposTotales": 5,
+      "cuposDisponibles": 5
+    },
+    {
+      "id": 2,
+      "nombre": "Ingles",
+      "duracion": "2 meses",
+      "cuposTotales": 0,
+      "cuposDisponibles": 0
+    },
+    {
+      "id": 3,
+      "nombre": "Matematicas",
+      "duracion": "6 meses",
+      "cuposTotales": 2,
+      "cuposDisponibles": 2
+    }
+  ]
